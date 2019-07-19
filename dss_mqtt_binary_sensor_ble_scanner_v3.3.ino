@@ -13,8 +13,8 @@
   If you like this example, please add a star! Thank you!
   https://github.com/mertenats/open-home-automation
 
-  SDeSalve -  v3.1 - 29.04.2018
-  https://github.com/sdesalve/Open-Home-Automation/
+  SDeSalve -  v3.3 - 04.06.2018
+  https://github.com/sdesalve/dss_mqtt_binary_sensor_ble_scanner
 */
 
 typedef struct {
@@ -33,7 +33,7 @@ typedef struct {
   ///////////////////////////////////////////////////////////////////////////
   uint8_t NB_OF_BLE_DISCOVERED_DEVICES = 0;
   BLETrackedDevice BLETrackedDevices[99] = {};
-  
+
   #define BLE_SCANNING_PERIOD   10
   #define MAX_NON_ADV_PERIOD    120000
 
@@ -262,7 +262,7 @@ void setup() {
 
   timer = timerBegin(0, 80, true); //timer 0, div 80
   timerAttachInterrupt(timer, &resetModule, true);
-  timerAlarmWrite(timer, 60000000, false); //set time in us 60000000 = 60 sec
+  timerAlarmWrite(timer, 120000000, false); //set time in us 120000000 = 120 sec
   timerAlarmEnable(timer); //enable interrupt
 
   BLEDevice::init("");
@@ -282,7 +282,7 @@ void loop() {
   DEBUG_PRINTLN(NB_OF_BLE_DISCOVERED_DEVICES);
 
   if (NB_OF_BLE_DISCOVERED_DEVICES > 90) {
-    ets_printf("INFO: Riavvio perché ho finito l'array\n");
+    DEBUG_PRINTLN("INFO: Riavvio perché ho finito l'array\n");
     esp_restart();
   }
 
@@ -298,9 +298,9 @@ void loop() {
   for (uint8_t i = 0; i < NB_OF_BLE_DISCOVERED_DEVICES; i++) {
     if (BLETrackedDevices[i].toNotify) {
       if (BLETrackedDevices[i].isDiscovered) {
-        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_ON, true);
+        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_ON, false);
       } else {
-        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, true);
+        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, false);
         BLETrackedDevices[i].toNotify = false;
       }
     }
