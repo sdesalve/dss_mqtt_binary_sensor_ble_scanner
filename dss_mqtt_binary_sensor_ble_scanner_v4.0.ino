@@ -13,16 +13,21 @@
   If you like this example, please add a star! Thank you!
   https://github.com/mertenats/open-home-automation
 
-  SDeSalve -  v3.3 - 04.06.2018
+  SDeSalve -  v3.3 - 04.06.2019
+  https://github.com/sdesalve/dss_mqtt_binary_sensor_ble_scanner
+
+  SDeSalve -  v4.0 - 19.07.2019
   https://github.com/sdesalve/dss_mqtt_binary_sensor_ble_scanner
 */
 
 typedef struct {
   String  address;
+  char    rssi[4];
   bool    isDiscovered;
   long    lastDiscovery;
   bool    toNotify;
   char    mqttTopic[48];
+  char    rssiTopic[48];
 } BLETrackedDevice;
 
 #include "config.h"
@@ -63,10 +68,11 @@ typedef struct {
   #define MQTT_CONNECTION_TIMEOUT 5000 // [ms]
 
   // MQTT availability: available/unavailable
-  #define MQTT_AVAILABILITY_TOPIC_TEMPLATE  "%s/availability"
-  // MQTT binary sensor: <CHIP_ID>/sensor/<LOCATION>/<BLE_ADDRESS>
-  #define MQTT_SENSOR_TOPIC_TEMPLATE        "%s/sensor/%s/%s/state"
-
+  #define MQTT_AVAILABILITY_TOPIC_TEMPLATE  "dss_ble2mqtt/%s/availability"
+  // MQTT binary sensor: dss_ble2mqtt/<CHIP_ID>/<LOCATION>/<BLE_ADDRESS>
+  #define MQTT_SENSOR_TOPIC_TEMPLATE        "dss_ble2mqtt/%s/%s/%s/state"
+  #define MQTT_RSSI_TOPIC_TEMPLATE          "dss_ble2mqtt/%s/%s/%s/rssi"
+  
   #define MQTT_PAYLOAD_ON   "ON"
   #define MQTT_PAYLOAD_OFF  "OFF"
 
@@ -206,6 +212,7 @@ class MyAdvertisedDeviceCallbacks:
             BLETrackedDevices[i].isDiscovered = true;
             BLETrackedDevices[i].lastDiscovery = millis();
             BLETrackedDevices[i].toNotify = true;
+            itoa(advertisedDevice.getRSSI(), BLETrackedDevices[i].rssi, 10);
 
             DEBUG_PRINT(F("INFO: Tracked device newly discovered, Address: "));
             DEBUG_PRINT(advertisedDevice.getAddress().toString().c_str());
@@ -214,6 +221,7 @@ class MyAdvertisedDeviceCallbacks:
           } else {
             BLETrackedDevices[i].toNotify = true;
             BLETrackedDevices[i].lastDiscovery = millis();
+            itoa(advertisedDevice.getRSSI(), BLETrackedDevices[i].rssi, 10);
             DEBUG_PRINT(F("INFO: Tracked device discovered, Address: "));
             DEBUG_PRINT(advertisedDevice.getAddress().toString().c_str());
             DEBUG_PRINT(F(", RSSI: "));
@@ -229,7 +237,8 @@ class MyAdvertisedDeviceCallbacks:
         BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].isDiscovered = true;
         BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].lastDiscovery = millis();
         BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].toNotify = false;
-
+        itoa(advertisedDevice.getRSSI(), BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].rssi, 10);
+        
         memset(MQTT_CLIENT_ID, 0, sizeof(MQTT_CLIENT_ID));
         sprintf(MQTT_CLIENT_ID, "%06X", ESP.getEfuseMac());
 
@@ -241,12 +250,18 @@ class MyAdvertisedDeviceCallbacks:
         sprintf(tmp_mqttTopic, MQTT_SENSOR_TOPIC_TEMPLATE, MQTT_CLIENT_ID, LOCATION, tmp_ble_address);
         memcpy(BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].mqttTopic, tmp_mqttTopic, sizeof(tmp_mqttTopic) + 1);
 
+        char tmp_rssiTopic[sizeof(MQTT_CLIENT_ID) + sizeof(MQTT_RSSI_TOPIC_TEMPLATE) + sizeof(LOCATION) + 12 - 4] = {0};
+        sprintf(tmp_rssiTopic, MQTT_RSSI_TOPIC_TEMPLATE, MQTT_CLIENT_ID, LOCATION, tmp_ble_address);
+        memcpy(BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].rssiTopic, tmp_rssiTopic, sizeof(tmp_rssiTopic) + 1);
+
         DEBUG_PRINT(F("INFO: Device discovered, Address: "));
         DEBUG_PRINT(advertisedDevice.getAddress().toString().c_str());
         DEBUG_PRINT(F(", RSSI: "));
         DEBUG_PRINT(advertisedDevice.getRSSI());
         DEBUG_PRINT(F(", MQTT sensor topic: "));
-        DEBUG_PRINTLN(BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].mqttTopic);
+        DEBUG_PRINT(BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].mqttTopic);
+        DEBUG_PRINT(F(", RSSI sensor topic: "));
+        DEBUG_PRINTLN(BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].rssiTopic);
       }
     }
 };
@@ -299,8 +314,10 @@ void loop() {
     if (BLETrackedDevices[i].toNotify) {
       if (BLETrackedDevices[i].isDiscovered) {
         publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_ON, false);
+        publishToMQTT(BLETrackedDevices[i].rssiTopic, BLETrackedDevices[i].rssi, false);
       } else {
         publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, false);
+        publishToMQTT(BLETrackedDevices[i].rssiTopic, "100", false);
         BLETrackedDevices[i].toNotify = false;
       }
     }
