@@ -8,14 +8,14 @@ BLETrackedDevice BLETrackedDevices[99] = {};
 #define MAX_NON_ADV_PERIOD    120000
 
 // Location of the BLE scanner
-#define LOCATION "casa"
+#define LOCATION "location"
 
 // Debug output
 #define DEBUG_SERIAL
 
 // Wi-Fi credentials
-#define WIFI_SSID     "TP-LINK_123456"
-#define WIFI_PASSWORD "xxxxxxxxxxxxxx"
+#define WIFI_SSID     "xxxxxxxxxxxxxxxx"
+#define WIFI_PASSWORD "xxxxxxxxxxxxxxxx"
 
 // Over-the-Air update
 // Not implemented yet
@@ -25,17 +25,19 @@ BLETrackedDevice BLETrackedDevices[99] = {};
 //#define OTA_PORT      8266  // port 8266 by default
 
 // MQTT
-#define MQTT_USERNAME     "mqtt"
-#define MQTT_PASSWORD     "xxxxxxxxxxxxxx"
-#define MQTT_SERVER       "192.168.x.xxx"
+#define MQTT_USERNAME     "xxxxxxxxxxxxxxxx"
+#define MQTT_PASSWORD     "xxxxxxxxxxxxxxxx"
+#define MQTT_SERVER       "192.168.5.149"
 #define MQTT_SERVER_PORT  1883
 
 #define MQTT_CONNECTION_TIMEOUT 5000 // [ms]
 
-// MQTT availability: available/unavailable
-#define MQTT_AVAILABILITY_TOPIC_TEMPLATE  "%s/availability" 
-// MQTT binary sensor: <CHIP_ID>/sensor/<LOCATION>/<BLE_ADDRESS>
-#define MQTT_SENSOR_TOPIC_TEMPLATE        "%s/sensor/%s/%s/state"
+// MQTT availability:  dss_ble2mqtt/<CHIP_ID>/availability
+#define MQTT_AVAILABILITY_TOPIC_TEMPLATE  "dss_ble2mqtt/%s/availability"
+// MQTT binary sensor: dss_ble2mqtt/<CHIP_ID>/<LOCATION>/<BLE_ADDRESS>/state
+#define MQTT_SENSOR_TOPIC_TEMPLATE        "dss_ble2mqtt/%s/%s/%s/state"
+// MQTT rssi sensor: dss_ble2mqtt/<CHIP_ID>/<LOCATION>/<BLE_ADDRESS>/rssi
+#define MQTT_RSSI_TOPIC_TEMPLATE          "dss_ble2mqtt/%s/%s/%s/rssi"
 
 #define MQTT_PAYLOAD_ON   "ON"
 #define MQTT_PAYLOAD_OFF  "OFF"
