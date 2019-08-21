@@ -314,7 +314,7 @@ void loop() {
       publishToMQTT(BLETrackedDevices[i].rssiTopic, BLETrackedDevices[i].rssi, false);
     } else {
       publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, false);
-      publishToMQTT(BLETrackedDevices[i].rssiTopic, "100", false);
+      publishToMQTT(BLETrackedDevices[i].rssiTopic, "-100", false);
       BLETrackedDevices[i].toNotify = false;
     }
   }
