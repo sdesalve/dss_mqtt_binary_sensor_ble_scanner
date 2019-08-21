@@ -13,10 +13,7 @@
   If you like this example, please add a star! Thank you!
   https://github.com/mertenats/open-home-automation
 
-  SDeSalve -  v3.3 - 04.06.2019
-  https://github.com/sdesalve/dss_mqtt_binary_sensor_ble_scanner
-
-  SDeSalve -  v4.0 - 19.07.2019
+  SDeSalve -  v4.2 - 21.08.2019
   https://github.com/sdesalve/dss_mqtt_binary_sensor_ble_scanner
 */
 
@@ -40,7 +37,7 @@ typedef struct {
   BLETrackedDevice BLETrackedDevices[99] = {};
 
   #define BLE_SCANNING_PERIOD   10
-  #define MAX_NON_ADV_PERIOD    120000
+  #define MAX_NON_ADV_PERIOD    60000
 
   // Location of the BLE scanner
   #define LOCATION "location"
@@ -72,7 +69,7 @@ typedef struct {
   // MQTT binary sensor: dss_ble2mqtt/<CHIP_ID>/<LOCATION>/<BLE_ADDRESS>
   #define MQTT_SENSOR_TOPIC_TEMPLATE        "dss_ble2mqtt/%s/%s/%s/state"
   #define MQTT_RSSI_TOPIC_TEMPLATE          "dss_ble2mqtt/%s/%s/%s/rssi"
-  
+
   #define MQTT_PAYLOAD_ON   "ON"
   #define MQTT_PAYLOAD_OFF  "OFF"
 
@@ -176,7 +173,7 @@ void connectToMQTT() {
   if (!mqttClient.connected()) {
     if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD, MQTT_AVAILABILITY_TOPIC, 1, true, MQTT_PAYLOAD_UNAVAILABLE)) {
       DEBUG_PRINTLN(F("INFO: The client is successfully connected to the MQTT broker"));
-      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, true);
+      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, false);
     } else {
       DEBUG_PRINTLN(F("ERROR: The connection to the MQTT broker failed"));
       DEBUG_PRINT(F("INFO: MQTT username: "));
@@ -189,7 +186,7 @@ void connectToMQTT() {
   } else {
     if (lastMQTTConnection < millis()) {
       lastMQTTConnection = millis() + MQTT_CONNECTION_TIMEOUT;
-      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, true);
+      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, false);
     }
   }
 }
@@ -238,7 +235,7 @@ class MyAdvertisedDeviceCallbacks:
         BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].lastDiscovery = millis();
         BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].toNotify = false;
         itoa(advertisedDevice.getRSSI(), BLETrackedDevices[NB_OF_BLE_DISCOVERED_DEVICES - 1].rssi, 10);
-        
+
         memset(MQTT_CLIENT_ID, 0, sizeof(MQTT_CLIENT_ID));
         sprintf(MQTT_CLIENT_ID, "%06X", ESP.getEfuseMac());
 
@@ -311,17 +308,20 @@ void loop() {
   }
 
   for (uint8_t i = 0; i < NB_OF_BLE_DISCOVERED_DEVICES; i++) {
-    if (BLETrackedDevices[i].toNotify) {
-      if (BLETrackedDevices[i].isDiscovered) {
-        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_ON, false);
-        publishToMQTT(BLETrackedDevices[i].rssiTopic, BLETrackedDevices[i].rssi, false);
-      } else {
-        publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, false);
-        publishToMQTT(BLETrackedDevices[i].rssiTopic, "100", false);
-        BLETrackedDevices[i].toNotify = false;
-      }
+    //    if (BLETrackedDevices[i].toNotify) {
+    if (BLETrackedDevices[i].isDiscovered) {
+      publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_ON, false);
+      publishToMQTT(BLETrackedDevices[i].rssiTopic, BLETrackedDevices[i].rssi, false);
+    } else {
+      publishToMQTT(BLETrackedDevices[i].mqttTopic, MQTT_PAYLOAD_OFF, false);
+      publishToMQTT(BLETrackedDevices[i].rssiTopic, "100", false);
+      BLETrackedDevices[i].toNotify = false;
     }
   }
+
+  //  }
+  connectToMQTT();
+
   //mqttClient.disconnect();
   //WiFi.mode(WIFI_OFF);
 }
