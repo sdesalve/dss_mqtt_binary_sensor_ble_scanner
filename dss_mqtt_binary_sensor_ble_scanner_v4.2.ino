@@ -173,7 +173,7 @@ void connectToMQTT() {
   if (!mqttClient.connected()) {
     if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USERNAME, MQTT_PASSWORD, MQTT_AVAILABILITY_TOPIC, 1, true, MQTT_PAYLOAD_UNAVAILABLE)) {
       DEBUG_PRINTLN(F("INFO: The client is successfully connected to the MQTT broker"));
-      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, false);
+      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, true);
     } else {
       DEBUG_PRINTLN(F("ERROR: The connection to the MQTT broker failed"));
       DEBUG_PRINT(F("INFO: MQTT username: "));
@@ -186,7 +186,7 @@ void connectToMQTT() {
   } else {
     if (lastMQTTConnection < millis()) {
       lastMQTTConnection = millis() + MQTT_CONNECTION_TIMEOUT;
-      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, false);
+      publishToMQTT(MQTT_AVAILABILITY_TOPIC, MQTT_PAYLOAD_AVAILABLE, true);
     }
   }
 }
