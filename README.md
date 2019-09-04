@@ -12,4 +12,18 @@ A simple example describing how to track a Bluetooth Low Energy device with an E
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 
-*If you like the content of this repo, please add a star! Thank you!*
+
+## Ciao amico! ##
+
+Se trovi utile questo lavoro e vuoi ringraziarmi, puoi offrirmi uno o più caffè! 
+
+I :hearts: so much coffee... :grimacing::grimacing::grimacing:
+
+Grazie per il tuo supporto!
+
+[![Buy me a coffee][buymeacoffee-shield]][buymeacoffee] [![Support my work on Paypal][paypal-shield]][paypal]
+
+[buymeacoffee-shield]: https://www.buymeacoffee.com/assets/img/guidelines/download-assets-sm-2.svg
+[buymeacoffee]: https://www.buymeacoffee.com/sdesalve
+[paypal-shield]: https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif
+[paypal]: https://paypal.me/SDeSalve
